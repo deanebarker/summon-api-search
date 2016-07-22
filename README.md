@@ -19,9 +19,10 @@ Any combination of parameters can be added, but at the current time, they cannot
 
 ## Code Sample
 
-    var query = new Query("[access ID]", "[secret key]");
+    var query = new SummonQuery("[access ID]", "[secret key]");
 	query.AddParameter("q", "[search term]");
     query.Execute();
+
     foreach(var document in query.Documents)
     {
         Console.Writeline(document.Title);
