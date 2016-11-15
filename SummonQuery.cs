@@ -80,6 +80,15 @@ namespace Summon.Core
             Parameters.Add(string.Concat("s.", key), value.ToString());
         }
 
+        public SummonDocument GetByBookmark(string bookmark)
+        {
+            Parameters.Clear();
+            AddParameter("bookMark", bookmark);
+            AddParameter("pn", "1");
+            Execute();
+            return Documents.FirstOrDefault();
+        }
+
         public void Execute()
         {
             // These two properties are strongly-typed so they can be used in the interface to assist in calculatin pagination
