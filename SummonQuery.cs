@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -28,7 +29,7 @@ namespace Summon.Core
 
         // TODO: This shouldn't be a Dictionary. The same key can technically be added twice.
         // Should be a NameValueCollection or a List<DictionaryEntry>
-        public Dictionary<string, string> Parameters { get; set; }
+        public List<DictionaryEntry> Parameters { get; set; }
 
 
         public SummonQuery(string accessId, string secretKey)
@@ -75,9 +76,9 @@ namespace Summon.Core
         {
             if(Parameters == null)
             {
-                Parameters = new Dictionary<string, string>();
+                Parameters = new List<DictionaryEntry>();
             }
-            Parameters.Add(string.Concat("s.", key), value.ToString());
+            Parameters.Add(new DictionaryEntry(string.Concat("s.", key), value.ToString()));
         }
 
         public SummonDocument GetByBookmark(string bookmark)
