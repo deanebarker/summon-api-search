@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -26,6 +27,7 @@ namespace Summon.Core
         public int TotalRecords { get; private set; }
         public List<Facet> TypeFacets { get; private set; }
         public List<SummonDocument> Documents { get; set; }
+        public string ErrorResponse { get; private set; }
 
         // TODO: This shouldn't be a Dictionary. The same key can technically be added twice.
         // Should be a NameValueCollection or a List<DictionaryEntry>
@@ -139,8 +141,23 @@ namespace Summon.Core
             var url = string.Concat("http://", Host, QueryPath, "?", queryString);
 
             // Parse the XML response           
-            var doc = XDocument.Parse(client.DownloadString(url));
-            RawResponseXml = doc;
+            XDocument doc = null;
+
+            try
+            {
+                doc = XDocument.Parse(client.DownloadString(url));
+            }
+            catch(WebException ex)
+            {
+                using (var stream = ex.Response.GetResponseStream())
+                using (var reader = new StreamReader(stream))
+                {
+                    ErrorResponse = reader.ReadToEnd();
+                }
+                throw;
+            }
+
+            RawResponseXml = doc;       
 
             // Calc some pagination information
             TotalPages = int.Parse(doc.Root.Attribute("pageCount").Value);
