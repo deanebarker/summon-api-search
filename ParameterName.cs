@@ -1,6 +1,6 @@
 ﻿namespace Summon.Core
 {
-    public static class Parameter
+    public static class ParameterName
     {
         public static string Bookmark = "bookMark";
         public static string Command = "cmd";
