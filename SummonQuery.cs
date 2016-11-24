@@ -52,7 +52,14 @@ namespace Summon.Core
 
         public void AddFacet(Facet facet)
         {
-            // DUCTTAPE: Knowing that certain facets can only be added once. ContentType, for instance. You can add it more than once, but the query will throw an error on execution.
+            /*
+             DUCTTAPE:
+             Know that certain facets can only be added once.
+             ContentType, for instance -- you can add it more than once,
+             but the query will throw an error on execution. Weirder: the
+             exception that comes back is 401 Unauthorized, and makes no 
+             reference to adding the second ContentType facet.
+             */
 
             if(Executed)
             {
@@ -65,7 +72,6 @@ namespace Summon.Core
             {
                 AddParameter(ParameterName.FacetValueFilter, facet.ToFacetValueFilterString());
             }
-
         }
 
         public void AddFacet(string fieldName, string value = null)
@@ -190,14 +196,13 @@ namespace Summon.Core
             client.Headers.Add("Authorization", authHeader);
             var url = string.Concat("http://", Host, QueryPath, "?", queryString);
 
-            // Parse the XML response           
-            XDocument doc = null;
-
+            // Get the response
+            var responseText = string.Empty;
             try
             {
-                doc = XDocument.Parse(client.DownloadString(url));
+                responseText = client.DownloadString(url);
             }
-            catch(WebException ex)
+            catch (WebException ex)
             {
                 using (var stream = ex.Response.GetResponseStream())
                 using (var reader = new StreamReader(stream))
@@ -207,6 +212,18 @@ namespace Summon.Core
                 throw;
             }
 
+            // Parse the XML           
+            XDocument doc = null;
+            try
+            {
+                doc = XDocument.Parse(responseText);
+            }
+            catch(Exception e)
+            {
+                throw new InvalidDataException("Unable to parse XML.", e);
+            }
+
+            // If we got here, then we downloaded and parsed the XML successfully
             Executed = true;
             RawResponseXml = doc;       
 
