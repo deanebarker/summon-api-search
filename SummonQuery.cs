@@ -25,12 +25,13 @@ namespace Summon.Core
         public int PageWeight { get; set;  }
         public int TotalPages { get; private set; }
         public int TotalRecords { get; private set; }
-        public List<Facet> TypeFacets { get; private set; }
         public List<SummonDocument> Documents { get; set; }
+
+        public bool Executed { get; private set; }
+
+        public List<FacetField> FacetFields { get; set; }
         public string ErrorResponse { get; private set; }
 
-        // TODO: This shouldn't be a Dictionary. The same key can technically be added twice.
-        // Should be a NameValueCollection or a List<DictionaryEntry>
         public List<DictionaryEntry> Parameters { get; set; }
 
 
@@ -46,11 +47,32 @@ namespace Summon.Core
             QueryPath = "/2.0.0/search";
             PageNumber = 1;
             PageWeight = 10;
+        }
 
-            // TODO: This is pretty hacked up. I'm not sure we 100% understand how Summon references facets (shouldn't a facet have an ID or something?)
-            var facetsToAdd = "Journal Article,Newspaper Article,Magazine Article,Newsletter,Book / eBook,Book Review,Reference,Trade Publication Article,Book Chapter,Pamphlet,Audio Recording,Report,Conference Proceeding,Video Recording";
-            TypeFacets = new List<Facet>();
-            facetsToAdd.Split(',').ToList().ForEach(x => TypeFacets.Add(new Facet() { Id = DeriveFacetIdFromName(x), Name = x }));
+        public void AddFacet(Facet facet)
+        {
+            if(Executed)
+            {
+                throw new InvalidOperationSequenceException();
+            }
+
+            AddParameter(ParameterName.FacetField, facet.ToFacetFilterString());
+
+            if(facet.HasValue)
+            {
+                AddParameter(ParameterName.FacetValueFilter, facet.ToFacetValueFilterString());
+            }
+
+        }
+
+        public void AddFacet(string fieldName, string value)
+        {
+            var facet = new Facet()
+            {
+                FieldName = fieldName,
+                Value = value
+            };
+            AddFacet(facet);
         }
 
         // A utility method to get the page number from the querystring, perform some logic, and assign
@@ -83,6 +105,26 @@ namespace Summon.Core
             Parameters.Add(new DictionaryEntry(string.Concat("s.", key), value.ToString()));
         }
 
+        public List<AppliedFacet> AppliedFacets
+        {
+            get
+            {
+                // TODO: I know there's a way to LINQ this up, but I couldn't figure it out...
+                var appliedFacets = new List<AppliedFacet>();
+                foreach(var facetField in FacetFields)
+                {
+                    foreach(var facetCount in facetField.FacetCounts)
+                    {
+                        if(facetCount.IsApplied)
+                        {
+                            appliedFacets.Add(new AppliedFacet() { Name = facetField.DisplayName, Value = facetCount.Value });
+                        }
+                    }
+                }
+                return appliedFacets;
+            }
+        }
+
         public SummonDocument GetByBookmark(string bookmark)
         {
             Parameters.Clear();
@@ -92,8 +134,15 @@ namespace Summon.Core
             return Documents.FirstOrDefault();
         }
 
-        public void Execute()
+        public void Execute(string query = null)
         {
+            Executed = true;
+
+            if(query != null)
+            {
+                AddParameter(ParameterName.TextQuery, query);
+            }
+
             // These two properties are strongly-typed so they can be used in the interface to assist in calculatin pagination
             // ---
 
@@ -163,23 +212,20 @@ namespace Summon.Core
             TotalPages = int.Parse(doc.Root.Attribute("pageCount").Value);
             TotalRecords = int.Parse(doc.Root.Attribute("recordCount").Value);
 
-            // Populate the facets
-            // TODO: this assumes ONLY ContentType facts, which is not legit for broader applications
-            foreach(var facetCount in doc.Descendants("facetCount"))
-            {
-                var thisFacet = TypeFacets.Where(x => x.Id == DeriveFacetIdFromName(facetCount.Attribute("value").Value)).FirstOrDefault();
-                if(thisFacet != null)
-                {
-                    thisFacet.Count = int.Parse(facetCount.Attribute("count").Value);
-                }
-            }
-
-            // Populate the documents
+            // Populate the Documents
             Documents = new List<SummonDocument>();
             foreach (var docElement in doc.Descendants("document"))
             {
                 Documents.Add(SummonDocument.ParseXml(docElement));
             }
+
+            // Populate the FacetFields
+            FacetFields = new List<FacetField>();
+            foreach(var facetFieldElement in doc.Root.Element("facetFields").Elements("facetField"))
+            {
+                FacetFields.Add(FacetField.ParseXml(facetFieldElement));
+            }
+
         }
 
         // This gets a simplified string for easy referencing and querystring embedded of facet names (again, shouldn't facets have IDs?)
@@ -243,13 +289,16 @@ namespace Summon.Core
             }
         }
 
+       
 
     }
 
-    public class Facet
+    public class InvalidOperationSequenceException : InvalidOperationException
     {
-        public string Name { get; set; }
-        public string Id { get; set; }
-        public int Count { get; set; }
+        public InvalidOperationSequenceException() : base("This operation cannot be performed after the query has been executed")
+        {
+
+        }
+           
     }
 }

@@ -41,6 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppliedFacet.cs" />
+    <Compile Include="Facet.cs" />
+    <Compile Include="FacetCount.cs" />
+    <Compile Include="FacetField.cs" />
+    <Compile Include="FacetFieldName.cs" />
     <Compile Include="SummonDocument.cs" />
     <Compile Include="ParameterName.cs" />
     <Compile Include="SummonQuery.cs" />

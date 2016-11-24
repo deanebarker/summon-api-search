@@ -19,6 +19,13 @@ namespace Summon.Core
         public static SummonDocument ParseXml(XElement docElement)
         {
             var doc = new SummonDocument();
+
+            foreach(var attribute in docElement.Attributes())
+            {
+                doc.Fields.Add(string.Concat("@", attribute.Name), new List<string>() { attribute.Value });
+            }
+
+
             foreach (var fieldElement in docElement.Elements("field"))
             {
                 var name = fieldElement.Attribute("name").Value;
