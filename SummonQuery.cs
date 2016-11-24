@@ -50,6 +50,13 @@ namespace Summon.Core
             PageWeight = 10;
         }
 
+        public void AddFilter(string field, string value)
+        {
+            var filter = new TextQuery();
+            filter.AddField(field, value);
+            AddParameter(ParameterName.TextFilter, filter);
+        }
+
         public void AddFacet(Facet facet)
         {
             /*
@@ -59,9 +66,16 @@ namespace Summon.Core
              but the query will throw an error on execution. Weirder: the
              exception that comes back is 401 Unauthorized, and makes no 
              reference to adding the second ContentType facet.
+
+            Look at this page:
+
+            http://api.summon.serialssolutions.com/help/api/search/fields
+
+            Under the "facet" elements, there's an attribute called "cardinality."
+            I think the facets you can only add once have a value here of "ZeroOrOne".
              */
 
-            if(Executed)
+            if (Executed)
             {
                 throw new InvalidOperationSequenceException();
             }
