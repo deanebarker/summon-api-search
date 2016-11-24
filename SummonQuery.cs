@@ -52,6 +52,8 @@ namespace Summon.Core
 
         public void AddFacet(Facet facet)
         {
+            // DUCTTAPE: Knowing that certain facets can only be added once. ContentType, for instance. You can add it more than once, but the query will throw an error on execution.
+
             if(Executed)
             {
                 throw new InvalidOperationSequenceException();
@@ -66,14 +68,9 @@ namespace Summon.Core
 
         }
 
-        public void AddFacet(string fieldName, string value)
+        public void AddFacet(string fieldName, string value = null)
         {
-            var facet = new Facet()
-            {
-                FieldName = fieldName,
-                Value = value
-            };
-            AddFacet(facet);
+            AddFacet(new Facet(fieldName, value));
         }
 
         // A utility method to get the page number from the querystring, perform some logic, and assign
@@ -99,7 +96,12 @@ namespace Summon.Core
 
         public void AddParameter(string key, object value)
         {
-            if(Parameters == null)
+            if (Executed)
+            {
+                throw new InvalidOperationSequenceException();
+            }
+
+            if (Parameters == null)
             {
                 Parameters = new List<DictionaryEntry>();
             }
@@ -137,8 +139,6 @@ namespace Summon.Core
 
         public void Execute(string query = null)
         {
-            Executed = true;
-
             if(query != null)
             {
                 AddParameter(ParameterName.TextQuery, query);
@@ -207,6 +207,7 @@ namespace Summon.Core
                 throw;
             }
 
+            Executed = true;
             RawResponseXml = doc;       
 
             // Calc some pagination information
@@ -227,15 +228,6 @@ namespace Summon.Core
                 FacetFields.Add(FacetField.ParseXml(facetFieldElement));
             }
 
-        }
-
-        // This gets a simplified string for easy referencing and querystring embedded of facet names (again, shouldn't facets have IDs?)
-        public static string DeriveFacetIdFromName(string name)
-        {
-            name = Regex.Replace(name, @"\W", "-");
-            name = name.Replace(" ", "-");
-            name = Regex.Replace(name, "-{2,100}", "-");
-            return name.ToLower().Trim();
         }
 
         // Pagination stuff

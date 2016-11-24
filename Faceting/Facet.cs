@@ -14,11 +14,14 @@ namespace Summon.Core.Faceting
         public string Operator { get; set; }
         public string Value { get; set; }
 
-        public Facet()
+        public Facet(string fieldName, string value = null)
         {
             PageNumber = 1;
             PageWeight = 10;
             Operator = "AND";
+
+            FieldName = fieldName;
+            Value = string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         public string ToFacetFilterString()
