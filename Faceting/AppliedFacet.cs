@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Summon.Core
+namespace Summon.Core.Faceting
 {
     public class AppliedFacet
     {
