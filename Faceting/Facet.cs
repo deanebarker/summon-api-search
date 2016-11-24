@@ -18,7 +18,7 @@ namespace Summon.Core.Faceting
         {
             PageNumber = 1;
             PageWeight = 10;
-            Operator = "AND";
+            Operator = "OR";
 
             FieldName = fieldName;
             Value = string.IsNullOrWhiteSpace(value) ? null : value;
