@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SummonDocument.cs" />
-    <Compile Include="Parameter.cs" />
+    <Compile Include="ParameterName.cs" />
     <Compile Include="SummonQuery.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
