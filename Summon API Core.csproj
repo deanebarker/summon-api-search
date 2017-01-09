@@ -46,6 +46,11 @@
     <Compile Include="Faceting\FacetCount.cs" />
     <Compile Include="Faceting\FacetField.cs" />
     <Compile Include="Faceting\FacetFieldName.cs" />
+    <Compile Include="Fields\AuthorField.cs" />
+    <Compile Include="Fields\CopyrightField.cs" />
+    <Compile Include="Fields\DateField.cs" />
+    <Compile Include="Fields\Field.cs" />
+    <Compile Include="Fields\IField.cs" />
     <Compile Include="SummonDocument.cs" />
     <Compile Include="ParameterName.cs" />
     <Compile Include="SummonQuery.cs" />

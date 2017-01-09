@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Summon.Core.Fields;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,54 +10,66 @@ namespace Summon.Core
 {
     public class SummonDocument
     {
-        public Dictionary<string, List<string>> Fields { get; set; }
+        public Dictionary<string, IField> Fields { get; set; }
+        
+        public static Dictionary<string, Type> FieldTypeMap = new Dictionary<string, Type>();
+
+        static SummonDocument()
+        {
+            FieldTypeMap.Add("PublicationDate_xml", typeof(DateField));
+            FieldTypeMap.Add("Copyright_xml", typeof(CopyrightField));
+            FieldTypeMap.Add("Author_xml", typeof(AuthorField));
+        }
 
         public SummonDocument()
         {
-            Fields = new Dictionary<string, List<string>>();
+            Fields = new Dictionary<string, IField>();
         }
 
         public static SummonDocument ParseXml(XElement docElement)
         {
             var doc = new SummonDocument();
 
+            // We're going to treat every attribute of the root element as a pseudo-field
             foreach(var attribute in docElement.Attributes())
             {
-                doc.Fields.Add(string.Concat("@", attribute.Name), new List<string>() { attribute.Value });
+                var fieldName = string.Concat("@", attribute.Name);
+                doc.Fields.Add(fieldName, new Field(fieldName, attribute.Value));
             }
 
-
+            // These are the actual fields. They are of type Field, unless another type has been mapped for the field name.
             foreach (var fieldElement in docElement.Elements("field"))
             {
-                var name = fieldElement.Attribute("name").Value;
-                var values = new List<string>();
-                foreach (var valueElement in fieldElement.Elements("value"))
+                var fieldName = fieldElement.Attribute("name").Value;
+                if(FieldTypeMap.ContainsKey(fieldName))
                 {
-                    values.Add(valueElement.Value);
+                    // This is a custom IField implementation for this particular field name
+                    var field = (IField)Activator.CreateInstance(FieldTypeMap[fieldName]);
+                    field.LoadFromXml(fieldElement);
+                    doc.Fields.Add(fieldName, field);
                 }
-                doc.Fields.Add(name, values);
+                else
+                {
+                    doc.Fields.Add(fieldName, new Field(fieldElement));
+                }
             }
             doc.Link = docElement.Attribute("link").Value;
             return doc;
         }
 
-        public string GetField(string key, string defaultValue = null)
+        public IField GetField(string key, string defaultValue = null)
         {
             if (!Fields.ContainsKey(key))
             {
                 if(defaultValue != null)
                 {
-                    return defaultValue;
+                    return new Field(key, defaultValue);
                 }
+
                 throw new ArgumentException("No field for key: " + key);
             }
 
-            if (Fields[key].Count == 0)
-            {
-                return defaultValue;
-            }
-
-            return Fields[key].First();
+            return Fields[key];
         }
 
         public bool HasField(string key)
@@ -68,43 +81,25 @@ namespace Summon.Core
         {
             get
             {
-                return GetField("Title", string.Empty);
+                return GetField("Title", string.Empty).Value;
             }
         }
 
         public string PublicationTitle
         {
-            get { return GetField("PublicationTitle", string.Empty); }
+            get { return GetField("PublicationTitle", string.Empty).Value; }
         }
 
         public string PublicationYear
         {
-            get { return GetField("PublicationYear", string.Empty); }
-        }
-
-        public string Authors
-        { 
-            get
-            {
-                if (!Fields.ContainsKey("Author") || Fields["Author"].Count == 0)
-                {
-                    return string.Empty;
-                }
-
-                if(Fields["Author"].Count > 4)
-                {
-                    return string.Join("; ", Fields["Author"].Take(4)) + " ( + " + (Fields["Author"].Count - 4) + " more)";
-                }
-
-                return string.Join("; ", Fields["Author"]);
-            }
+            get { return GetField("PublicationYear", string.Empty).Value; }
         }
 
         public string Link { get; private set; }
 
         public string Summary
         {
-            get { return GetField("Snippet", string.Empty); }
+            get { return GetField("Snippet", string.Empty).Value; }
         }
 
         public DateTime? Date
@@ -115,7 +110,7 @@ namespace Summon.Core
                 {
                     return new DateTime?();
                 }
-                return new DateTime?(DateTime.Parse(GetField("PublicationDate")));
+                return new DateTime?(DateTime.Parse(GetField("PublicationDate").Value));
             }
         }
 
@@ -123,7 +118,7 @@ namespace Summon.Core
         {
             get
             {
-                return GetField("ContentType", string.Empty);
+                return GetField("ContentType", string.Empty).Value;
             }
         }
 
@@ -131,7 +126,7 @@ namespace Summon.Core
         {
             get
             {
-                return GetField("thumbnail_s", string.Empty);
+                return GetField("thumbnail_s", string.Empty).Value;
             }
         }
 
@@ -139,7 +134,7 @@ namespace Summon.Core
         {
             get
             {
-                return GetField("thumbnail_m", string.Empty);
+                return GetField("thumbnail_m", string.Empty).Value;
             }
         }
 
@@ -147,7 +142,7 @@ namespace Summon.Core
         {
             get
             {
-                return GetField("thumbnail_l", string.Empty);
+                return GetField("thumbnail_l", string.Empty).Value;
             }
         }
 
@@ -172,14 +167,6 @@ namespace Summon.Core
             get
             {
                 return !string.IsNullOrWhiteSpace(MediumImage);
-            }
-        }
-
-        public bool HasAuthors
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(Authors);
             }
         }
 
