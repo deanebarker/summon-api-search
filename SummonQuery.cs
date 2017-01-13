@@ -27,6 +27,7 @@ namespace Summon.Core
         public int TotalPages { get; private set; }
         public int TotalRecords { get; private set; }
         public List<SummonDocument> Documents { get; set; }
+	public Uri SearchUrl { get; set; }
 
         public bool Executed { get; private set; }
 
@@ -209,6 +210,9 @@ namespace Summon.Core
             client.Headers.Add("x-summon-date", date);
             client.Headers.Add("Authorization", authHeader);
             var url = string.Concat("http://", Host, QueryPath, "?", queryString);
+
+	SearchUrl = new Uri(url);
+
 
             // Get the response
             var responseText = string.Empty;
