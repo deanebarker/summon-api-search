@@ -34,7 +34,7 @@ namespace Summon.Core
             foreach(var attribute in docElement.Attributes())
             {
                 var fieldName = string.Concat("@", attribute.Name);
-                doc.Fields.Add(fieldName, new Field(fieldName, attribute.Value));
+                doc.AddField(fieldName, new Field(fieldName, attribute.Value));
             }
 
             // These are the actual fields. They are of type Field, unless another type has been mapped for the field name.
@@ -46,15 +46,25 @@ namespace Summon.Core
                     // This is a custom IField implementation for this particular field name
                     var field = (IField)Activator.CreateInstance(FieldTypeMap[fieldName]);
                     field.LoadFromXml(fieldElement);
-                    doc.Fields.Add(fieldName, field);
+                    doc.AddField(fieldName, field);
                 }
                 else
                 {
-                    doc.Fields.Add(fieldName, new Field(fieldElement));
+                    doc.AddField(fieldName, new Field(fieldElement));
                 }
             }
             doc.Link = docElement.Attribute("link").Value;
             return doc;
+        }
+
+        public void AddField(string key, IField field)
+        {
+            //DUCT TAPE: This ignores subsequent fields of the same key. This will effectively hide the second, third, etc. fields with the same key.
+            if(Fields.ContainsKey(key))
+            {
+                return;
+            }
+            fields.Add(key, field);
         }
 
         public IField GetField(string key, string defaultValue = null)
