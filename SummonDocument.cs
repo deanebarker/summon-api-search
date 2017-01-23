@@ -1,6 +1,7 @@
 ﻿using Summon.Core.Fields;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,8 @@ namespace Summon.Core
 {
     public class SummonDocument
     {
-        public Dictionary<string, IField> Fields { get; set; }
+        private Dictionary<string, IField> fields { get; set; }
+        public ReadOnlyDictionary<string, IField> Fields { get { return new ReadOnlyDictionary<string, IField>(fields); } }
         
         public static Dictionary<string, Type> FieldTypeMap = new Dictionary<string, Type>();
 
@@ -23,7 +25,7 @@ namespace Summon.Core
 
         public SummonDocument()
         {
-            Fields = new Dictionary<string, IField>();
+            fields = new Dictionary<string, IField>();
         }
 
         public static SummonDocument ParseXml(XElement docElement)
