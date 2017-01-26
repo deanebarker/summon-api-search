@@ -183,7 +183,7 @@ namespace Summon.Core
             var date = DateTime.UtcNow.ToString(DateFormat);
 
             // Create the querystring from the parameters
-            var queryString = string.Join("&", Parameters.OrderBy(x => x.Key).Select(x => string.Concat(x.Key, "=", x.Value)));
+            var queryString = string.Join("&", Parameters.OrderBy(x => x.Value).OrderBy(x => x.Key).Select(x => string.Concat(x.Key, "=", x.Value)));
 
             // Create the ID string
             var idString = string.Concat(string.Join("\n", new[] { AcceptHeader, date, Host, QueryPath, queryString }), "\n");
