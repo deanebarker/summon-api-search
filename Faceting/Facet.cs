@@ -13,8 +13,9 @@ namespace Summon.Core.Faceting
         public int PageWeight { get; set; }
         public string Operator { get; set; }
         public string Value { get; set; }
+        public bool Negate { get; set; }
 
-        public Facet(string fieldName, string value = null)
+        public Facet(string fieldName, string value = null, bool negate = false)
         {
             PageNumber = 1;
             PageWeight = 10;
@@ -22,6 +23,7 @@ namespace Summon.Core.Faceting
 
             FieldName = fieldName;
             Value = string.IsNullOrWhiteSpace(value) ? null : value;
+            Negate = negate;
         }
 
         public string ToFacetFilterString()
@@ -31,8 +33,7 @@ namespace Summon.Core.Faceting
 
         public string ToFacetValueFilterString()
         {
-            // DUCTTAPE: I am not 100% sure what that last parameter even does...
-            return string.Join(",", new[] { FieldName, Value, "false" });
+            return string.Join(",", new[] { FieldName, Value, Negate.ToString().ToLower() });
         }
 
         public bool HasValue
