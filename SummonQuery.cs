@@ -1,4 +1,5 @@
 ﻿using Summon.Core.Faceting;
+using Summon.Core.Recommendations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace Summon.Core
         public int TotalPages { get; private set; }
         public int TotalRecords { get; private set; }
         public List<SummonDocument> Documents { get; set; }
+		public List<RecommendationList> RecommendationLists { get; private set; }
 	public Uri SearchUrl { get; set; }
 
         public bool Executed { get; private set; }
@@ -263,6 +265,9 @@ namespace Summon.Core
                 FacetFields.Add(FacetField.ParseXml(facetFieldElement));
             }
 
+			// Populate the recommendations
+			RecommendationLists = new List<RecommendationList>();
+			doc.Root.Descendants("recommendationList").ToList().ForEach(x => RecommendationLists.Add(RecommendationList.ParseXml(x)));
         }
 
         // Pagination stuff
