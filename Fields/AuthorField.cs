@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 
 namespace Summon.Core.Fields
@@ -21,11 +22,11 @@ namespace Summon.Core.Fields
             }
         }
 
-        public string GetAuthorString(int maxCount = 9999)
+        public string GetAuthorString(int maxCount = 9999, bool includeMoreAuthorCount = true)
         {
-            var authorString = string.Join("; ", Authors.OrderBy(x => x.Sequence).Take(maxCount).Select(y => y.FullName));
+            var authorString = string.Join("; ", Authors.Take(maxCount));
 
-            if(Authors.Count > maxCount)
+            if(Authors.Count > maxCount && includeMoreAuthorCount)
             {
                 authorString = string.Concat(authorString, "; and ", (Authors.Count - maxCount), " more");
             }
@@ -39,39 +40,12 @@ namespace Summon.Core.Fields
             Name = element.Attribute("name").Value;
         }
 
-        public List<Author> Authors
+        public List<string> Authors
         {
             get
             {
-                return RawXml.Elements("contributor").Select(x => new Author(x)).ToList();
+                return RawXml.Elements("value").Select(x => x.Value).ToList();
             }
         }
-    }
-
-    public class Author
-    {
-
-        public Author(XElement element)
-        {
-            Sequence = int.Parse((string)element.Attribute("sequence") ?? "9999");
-
-            GivenName = (string)element.Attribute("givenname") ?? null;
-            Surname = (string)element.Attribute("surname") ?? null;
-            FullName = (string)element.Attribute("fullname") ?? null;
-            MiddleName = (string)element.Attribute("middlename") ?? null;
-
-            if (element.Elements("organization").Any())
-            {
-                OrganizationName = element.Element("organization").Value;
-            }
-
-
-        }
-        public string GivenName { get; private set; }
-        public string Surname { get; private set; }
-        public string FullName { get; private set; }
-        public string MiddleName { get; private set; }
-        public string OrganizationName { get; private set; }
-        public int Sequence { get; private set; }
     }
 }

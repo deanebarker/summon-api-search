@@ -20,7 +20,7 @@ namespace Summon.Core
         {
             FieldTypeMap.Add("PublicationDate_xml", typeof(DateField));
             FieldTypeMap.Add("Copyright_xml", typeof(CopyrightField));
-            FieldTypeMap.Add("Author_xml", typeof(AuthorField));
+            FieldTypeMap.Add("Author", typeof(AuthorField));
         }
 
         public SummonDocument()
