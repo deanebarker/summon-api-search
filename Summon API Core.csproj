@@ -51,6 +51,7 @@
     <Compile Include="Fields\DateField.cs" />
     <Compile Include="Fields\Field.cs" />
     <Compile Include="Fields\IField.cs" />
+    <Compile Include="DisplayField.cs" />
     <Compile Include="Recommendations\Recommendation.cs" />
     <Compile Include="Recommendations\RecommendationList.cs" />
     <Compile Include="SummonDocument.cs" />
