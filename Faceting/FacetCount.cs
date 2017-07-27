@@ -12,6 +12,7 @@ namespace Summon.Core.Faceting
         public long Count { get; set; }
         public string Value { get; set; }
         public bool IsApplied { get; set; }
+        public bool IsExcluded { get; set; }
 
         public static FacetCount ParseXml(XElement facetCountElement)
         {
@@ -19,7 +20,8 @@ namespace Summon.Core.Faceting
             {
                 Value = facetCountElement.Attribute("value").Value,
                 Count = long.Parse(facetCountElement.Attribute("count").Value),
-                IsApplied = bool.Parse(facetCountElement.Attribute("isApplied").Value)
+                IsApplied = bool.Parse(facetCountElement.Attribute("isApplied").Value),
+                IsExcluded = bool.Parse(facetCountElement.Attribute("isNegated").Value)
             };
 
             return facetCount;
