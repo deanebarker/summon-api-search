@@ -253,7 +253,7 @@ namespace Summon.Core
 
             // Populate the Documents
             Documents = new List<SummonDocument>();
-            foreach (var docElement in doc.Descendants("document"))
+            foreach (var docElement in doc.Root.Element("documents").Elements("document"))
             {
                 Documents.Add(SummonDocument.ParseXml(docElement));
             }
