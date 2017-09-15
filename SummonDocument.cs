@@ -16,6 +16,8 @@ namespace Summon.Core
         
         public static Dictionary<string, Type> FieldTypeMap = new Dictionary<string, Type>();
 
+        public List<SummonDocument> PeerDocuments = new List<SummonDocument>();
+
         static SummonDocument()
         {
             FieldTypeMap.Add("PublicationDate_xml", typeof(DateField));
@@ -56,6 +58,16 @@ namespace Summon.Core
                 }
             }
             doc.Link = docElement.Attribute("link").Value;
+
+            // Populate any peer documents
+            if (docElement.Elements("peerDocuments").Any())
+            {
+                foreach (var peerDocXml in docElement.Element("peerDocuments").Elements("document"))
+                {
+                    doc.PeerDocuments.Add(ParseXml(peerDocXml));
+                }
+            }
+
             return doc;
         }
 
