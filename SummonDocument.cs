@@ -69,6 +69,11 @@ namespace Summon.Core
             fields.Add(key, field);
         }
 
+        public T GetField<T>(string key, string defaultValue = null) where T : IField
+        {
+            return (T)GetField(key, defaultValue);
+        }
+
         public IField GetField(string key, string defaultValue = null)
         {
             if (!Fields.ContainsKey(key))
@@ -78,7 +83,7 @@ namespace Summon.Core
                     return new Field(key, defaultValue);
                 }
 
-                throw new ArgumentException("No field for key: " + key);
+                return null;
             }
 
             return Fields[key];
