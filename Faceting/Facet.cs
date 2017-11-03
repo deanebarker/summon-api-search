@@ -15,20 +15,23 @@ namespace Summon.Core.Faceting
         public string Value { get; set; }
         public bool Negate { get; set; }
 
-        public Facet(string fieldName, string value = null, bool negate = false)
+        public IList<string> WhiteList { get; set; }
+
+        public Facet(string fieldName, string value = null, bool negate = false, int pageNumber = 1, int pageWeight = 10, IList<string> whiteList = null)
         {
-            PageNumber = 1;
-            PageWeight = 10;
+            PageNumber = pageNumber;
+            PageWeight = pageWeight;
             Operator = "OR";
 
             FieldName = fieldName;
             Value = string.IsNullOrWhiteSpace(value) ? null : value;
             Negate = negate;
+            WhiteList = whiteList != null ? whiteList : new List<string>();
         }
 
         public string ToFacetFilterString()
         {
-            return string.Join(",", new[] { FieldName, Operator, PageNumber.ToString(), PageWeight.ToString() });
+            return string.Join(",", new[] { FieldName, Operator, (WhiteList != null ? string.Join(":", WhiteList) : PageNumber.ToString()), PageWeight.ToString() });
         }
 
         public string ToFacetValueFilterString()
